@@ -7,6 +7,7 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="TTErrorViewController">
             <connections>
+                <outlet property="icon" destination="6YY-IT-zW8" id="Ic9-tT-x2e"/>
                 <outlet property="information" destination="0LW-Mb-JBO" id="Sev-sD-VUj"/>
                 <outlet property="message" destination="LkJ-4t-3rh" id="ehQ-gt-wgB"/>
                 <outlet property="view" destination="sMA-bY-Y05" id="3mS-SL-zPP"/>
@@ -14,7 +15,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="sMA-bY-Y05">
+        <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" cornerRadius="10" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="sMA-bY-Y05">
             <rect key="frame" x="0.0" y="0.0" width="259" height="131"/>
             <view key="contentView" id="vny-Hr-Nwt">
                 <rect key="frame" x="1" y="1" width="257" height="129"/>
@@ -32,7 +33,7 @@
                         <rect key="frame" x="77" y="14" width="168" height="60"/>
                         <textFieldCell key="cell" controlSize="small" selectable="YES" sendsActionOnEndEditing="YES" title="suggestion" id="Ogl-ZW-oKU">
                             <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
@@ -42,7 +43,7 @@
                             <constraint firstAttribute="height" constant="45" id="LLW-e1-pB2"/>
                             <constraint firstAttribute="width" constant="45" id="WJN-Ca-U7m"/>
                         </constraints>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyUpOrDown" image="NSCaution" id="0on-N6-0J9"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="0on-N6-0J9"/>
                     </imageView>
                 </subviews>
             </view>
@@ -56,11 +57,8 @@
                 <constraint firstItem="LkJ-4t-3rh" firstAttribute="leading" secondItem="6YY-IT-zW8" secondAttribute="trailing" constant="20" id="gs9-qN-jI5"/>
                 <constraint firstAttribute="bottom" secondItem="0LW-Mb-JBO" secondAttribute="bottom" constant="15" id="nT1-kb-yGc"/>
             </constraints>
-            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-            <color key="fillColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+            <color key="borderColor" name="separatorColor" catalog="System" colorSpace="catalog"/>
+            <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
         </box>
     </objects>
-    <resources>
-        <image name="NSCaution" width="32" height="32"/>
-    </resources>
 </document>

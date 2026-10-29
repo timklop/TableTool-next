@@ -2,7 +2,7 @@
 
 # Table Tool 
 
-A simple CSV editor for OS X.
+A simple CSV editor for macOS.
 
 Download [on the Mac App Store](https://itunes.apple.com/app/table-tool/id1122008420?mt=12).
 
@@ -29,6 +29,16 @@ Edit the contents of the cells, rows and columns of the document easily in a gri
 
 **Convert Files:**
 Convert an existing CSV file to a different format.
+
+## Requirements
+
+Table Tool runs on macOS 12 Monterey or later, natively on both Apple Silicon and Intel Macs (universal binary).
+
+To build it yourself, open `Table Tool.xcodeproj` in Xcode and run the *Table Tool* scheme, or build a universal release from the command line:
+
+```
+xcodebuild -project "Table Tool.xcodeproj" -scheme "Table Tool" -configuration Release -destination "generic/platform=macOS" build
+```
 
 ## Credits
 

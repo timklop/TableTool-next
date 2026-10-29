@@ -12,6 +12,7 @@
 
 @property IBOutlet NSTextField *information;
 @property IBOutlet NSTextField *message;
+@property IBOutlet NSImageView *icon;
 
 -(instancetype)initWithMessage:(NSString *)errorMessage information:(NSString *)errorInformation;
 

@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Egger Apps. All rights reserved.
 //
 
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "Constants.h"
 #import "Document.h"
 #import "CSVReader.h"
@@ -13,6 +14,13 @@
 #import "CSVHeuristic.h"
 #import "TTErrorViewController.h"
 #import "ToolbarIcons.h"
+
+static NSToolbarIdentifier const TTDocumentToolbarIdentifier = @"TTDocumentToolbar";
+static NSToolbarItemIdentifier const TTToolbarItemAddColumn = @"TTToolbarItemAddColumn";
+static NSToolbarItemIdentifier const TTToolbarItemDeleteColumn = @"TTToolbarItemDeleteColumn";
+static NSToolbarItemIdentifier const TTToolbarItemAddRow = @"TTToolbarItemAddRow";
+static NSToolbarItemIdentifier const TTToolbarItemDeleteRow = @"TTToolbarItemDeleteRow";
+static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConvert";
 
 @interface Document () {
     NSCell *dataCell;
@@ -64,7 +72,11 @@
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController {
     [super windowControllerDidLoadNib:aController];
+    [self setUpToolbarForWindow:aController.window];
+    self.tableView.style = NSTableViewStyleFullWidth;
     dataCell = [self.tableView.tableColumns.firstObject dataCell];
+    // Monospaced digits keep numbers in a column aligned
+    dataCell.font = [NSFont monospacedDigitSystemFontOfSize:NSFont.systemFontSize weight:NSFontWeightRegular];
     [self updateTableColumns];
     
     if (!statusBarFormatViewController) {
@@ -84,16 +96,119 @@
         [self.tableView reloadData];
     }
     
-    [self enableToolbarButtons];
-    
-    if(readingError) dispatch_async(dispatch_get_main_queue(), ^{
-        [self displayError:readingError];
-    });
-    
-    [self updateToolbarIcons];
+    enableEditing = YES;
 
-    [self.splitView addSubview:statusBarFormatViewController.view positioned:NSWindowAbove relativeTo:self.splitView];
+    if(readingError) dispatch_async(dispatch_get_main_queue(), ^{
+        [self displayError:self->readingError];
+    });
+
+    NSView *formatBar = statusBarFormatViewController.view;
+    formatBar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.formatBarContainer addSubview:formatBar];
+    [NSLayoutConstraint activateConstraints:@[
+        [formatBar.leadingAnchor constraintEqualToAnchor:self.formatBarContainer.leadingAnchor],
+        [formatBar.trailingAnchor constraintEqualToAnchor:self.formatBarContainer.trailingAnchor],
+        [formatBar.topAnchor constraintEqualToAnchor:self.formatBarContainer.topAnchor],
+        [formatBar.bottomAnchor constraintEqualToAnchor:self.formatBarContainer.bottomAnchor],
+    ]];
     [statusBarFormatViewController selectFormatByConfig];
+    [self updateWindowSubtitle];
+}
+
+#pragma mark - window, toolbar
+
+-(void)setUpToolbarForWindow:(NSWindow *)window {
+    NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:TTDocumentToolbarIdentifier];
+    toolbar.delegate = self;
+    toolbar.displayMode = NSToolbarDisplayModeIconOnly;
+    toolbar.allowsUserCustomization = YES;
+    // Set after the defaults above, so a configuration the user saved wins
+    toolbar.autosavesConfiguration = YES;
+    window.toolbar = toolbar;
+    window.toolbarStyle = NSWindowToolbarStyleUnified;
+}
+
+-(NSArray<NSToolbarItemIdentifier> *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
+    return @[TTToolbarItemAddColumn, TTToolbarItemDeleteColumn, NSToolbarSpaceItemIdentifier,
+             TTToolbarItemAddRow, TTToolbarItemDeleteRow, NSToolbarFlexibleSpaceItemIdentifier,
+             TTToolbarItemConvert];
+}
+
+-(NSArray<NSToolbarItemIdentifier> *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
+    return @[TTToolbarItemAddColumn, TTToolbarItemDeleteColumn, TTToolbarItemAddRow, TTToolbarItemDeleteRow,
+             TTToolbarItemConvert, NSToolbarSpaceItemIdentifier, NSToolbarFlexibleSpaceItemIdentifier];
+}
+
+-(NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSToolbarItemIdentifier)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag {
+    if ([itemIdentifier isEqualToString:TTToolbarItemAddColumn]) {
+        return [self toolbarGroupWithIdentifier:itemIdentifier
+                                          label:@"Add Column"
+                                         images:@[[ToolbarIcons imageOfAddLeftColumnIcon], [ToolbarIcons imageOfAddRightColumnIcon]]
+                                  subitemLabels:@[@"Left", @"Right"]
+                                subitemToolTips:@[@"Add a column to the left of the selection", @"Add a column to the right of the selection"]
+                                         action:@selector(addColumn:)];
+    }
+    if ([itemIdentifier isEqualToString:TTToolbarItemAddRow]) {
+        return [self toolbarGroupWithIdentifier:itemIdentifier
+                                          label:@"Add Row"
+                                         images:@[[ToolbarIcons imageOfAddRowAboveIcon], [ToolbarIcons imageOfAddRowBelowIcon]]
+                                  subitemLabels:@[@"Above", @"Below"]
+                                subitemToolTips:@[@"Add a row above the selection", @"Add a row below the selection"]
+                                         action:@selector(addRow:)];
+    }
+    if ([itemIdentifier isEqualToString:TTToolbarItemDeleteColumn]) {
+        return [self toolbarItemWithIdentifier:itemIdentifier label:@"Delete Column" toolTip:@"Delete the selected columns" image:[ToolbarIcons imageOfDeleteColumnIcon] action:@selector(deleteColumn:)];
+    }
+    if ([itemIdentifier isEqualToString:TTToolbarItemDeleteRow]) {
+        return [self toolbarItemWithIdentifier:itemIdentifier label:@"Delete Row" toolTip:@"Delete the selected rows" image:[ToolbarIcons imageOfDeleteRowIcon] action:@selector(deleteRow:)];
+    }
+    if ([itemIdentifier isEqualToString:TTToolbarItemConvert]) {
+        NSImage *image = [NSImage imageWithSystemSymbolName:@"square.and.arrow.up" accessibilityDescription:@"Convert"];
+        return [self toolbarItemWithIdentifier:itemIdentifier label:@"Convert…" toolTip:@"Save a copy in a different CSV format" image:image action:@selector(exportFile:)];
+    }
+    return nil;
+}
+
+-(NSToolbarItem *)toolbarItemWithIdentifier:(NSToolbarItemIdentifier)identifier label:(NSString *)label toolTip:(NSString *)toolTip image:(NSImage *)image action:(SEL)action {
+    NSToolbarItem *item = [[NSToolbarItem alloc] initWithItemIdentifier:identifier];
+    item.label = label;
+    item.toolTip = toolTip;
+    item.image = image;
+    item.bordered = YES;
+    item.target = self;
+    item.action = action;
+    return item;
+}
+
+-(NSToolbarItemGroup *)toolbarGroupWithIdentifier:(NSToolbarItemIdentifier)identifier label:(NSString *)label images:(NSArray<NSImage *> *)images subitemLabels:(NSArray<NSString *> *)subitemLabels subitemToolTips:(NSArray<NSString *> *)subitemToolTips action:(SEL)action {
+    NSToolbarItemGroup *group = [NSToolbarItemGroup groupWithItemIdentifier:identifier images:images selectionMode:NSToolbarItemGroupSelectionModeMomentary labels:subitemLabels target:self action:action];
+    group.label = label;
+    [group.subitems enumerateObjectsUsingBlock:^(NSToolbarItem *subitem, NSUInteger idx, BOOL *stop) {
+        subitem.toolTip = subitemToolTips[idx];
+    }];
+    return group;
+}
+
+-(BOOL)validateToolbarItem:(NSToolbarItem *)item {
+    if (item.action == @selector(deleteColumn:)) {
+        return enableEditing && [self.tableView selectedColumn] != -1;
+    }
+    if (item.action == @selector(deleteRow:)) {
+        return enableEditing && [self.tableView selectedRow] != -1;
+    }
+    return enableEditing;
+}
+
+-(void)updateWindowSubtitle {
+    NSWindow *window = [(NSWindowController *)self.windowControllers.firstObject window];
+    if (!window) return;
+    NSInteger rowCount = _data.count;
+    NSInteger columnCount = self.tableView.numberOfColumns;
+    window.subtitle = [NSString stringWithFormat:@"%@ %@, %@ %@",
+                       [NSNumberFormatter localizedStringFromNumber:@(rowCount) numberStyle:NSNumberFormatterDecimalStyle],
+                       rowCount == 1 ? @"row" : @"rows",
+                       [NSNumberFormatter localizedStringFromNumber:@(columnCount) numberStyle:NSNumberFormatterDecimalStyle],
+                       columnCount == 1 ? @"column" : @"columns"];
 }
 
 - (void)close {
@@ -199,6 +314,7 @@
 			if (error) *error = outError;
 			[self updateTableColumns];
 			[self.tableView reloadData];
+			[self updateWindowSubtitle];
 			return NO;
 		}
 		_maxColumnNumber = MAX(_maxColumnNumber, line.count);
@@ -211,6 +327,7 @@
 	
 	[self updateTableColumns];
 	[self.tableView reloadData];
+	[self updateWindowSubtitle];
 	return YES;
 }
 
@@ -267,9 +384,9 @@
     NSArray *rowArray = [_data objectAtIndex:rowIndex];
     if(rowArray.count > tableColumn.identifier.integerValue){
         if([rowArray[tableColumn.identifier.integerValue] isKindOfClass:[NSDecimalNumber class]]){
-            textCell.alignment = NSRightTextAlignment;
+            textCell.alignment = NSTextAlignmentRight;
         }else{
-            textCell.alignment = NSLeftTextAlignment;
+            textCell.alignment = NSTextAlignmentLeft;
         }
     }
 }
@@ -301,6 +418,11 @@
     if (shouldReload) [self.tableView reloadData];
 }
 
+-(void)tableViewSelectionDidChange:(NSNotification *)notification {
+    // The toolbar only revalidates after events; selection can also change without one (e.g. via accessibility)
+    [self.tableView.window.toolbar validateVisibleItems];
+}
+
 -(void)tableViewColumnDidMove:(NSNotification *)aNotification {
     if(!ignoreColumnDidMoveNotifications){
         [self.undoManager setActionName:@"Move Column"];
@@ -326,10 +448,14 @@
 {
     validPBoardTypes = [NSArray arrayWithObjects:TTRowInternalPboardType,
                                                  NSPasteboardTypeTabularText,
-                                                 NSStringPboardType,
+                                                 NSPasteboardTypeString,
                                                  nil];
 }
 
+// Deprecated in favour of -tableView:pasteboardWriterForRow:, which writes one pasteboard item per row.
+// Keep writing all dragged rows as a single tab-separated item, which is what Numbers and TextEdit expect.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (BOOL)tableView:(NSTableView *)tableView
 writeRowsWithIndexes:(NSIndexSet *)rowIndexes
      toPasteboard:(NSPasteboard *)pboard
@@ -340,7 +466,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     [pboard declareTypes:validPBoardTypes owner: nil];
     
     // TTRowInternalPboardType is used for app internal movement of rows
-    NSData *serializedRowIndexes = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    NSData *serializedRowIndexes = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes requiringSecureCoding:YES error:NULL];
     [pboard setData:serializedRowIndexes forType:TTRowInternalPboardType];
 
     NSArray *rowDataAtIndexes = [_data objectsAtIndexes:rowIndexes];
@@ -358,6 +484,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     
     return YES;
 }
+#pragma clang diagnostic pop
 
 - (NSDragOperation)tableView:(NSTableView *)tableView
                 validateDrop:(id<NSDraggingInfo>)info
@@ -392,7 +519,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
             tableView == self.tableView)
         { // NOTE: for now, only drag & drop within the same tableView is supported
             NSData *serializedDraggedRowIndexes = [pboard dataForType:TTRowInternalPboardType];
-            NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:serializedDraggedRowIndexes];
+            NSIndexSet *draggedRowIndexes = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSIndexSet class] fromData:serializedDraggedRowIndexes error:NULL];
             
             return [self moveRowsAtIndexes:draggedRowIndexes toIndex:destinationRow];
         }
@@ -569,7 +696,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
         NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:[NSString stringWithFormat:@"%d",i]];
         tableColumn.dataCell = dataCell;
 		tableColumn.headerCell.stringValue = i < columnNames.count ? columnNames[i] : [self generateColumnName:i];
-        ((NSCell *)tableColumn.headerCell).alignment = NSCenterTextAlignment;
+        ((NSCell *)tableColumn.headerCell).alignment = NSTextAlignmentCenter;
         [self.tableView addTableColumn: tableColumn];
     }
 }
@@ -579,7 +706,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
         for(int i = 0; i < [self.tableView.tableColumns count]; i++) {
             NSTableColumn *tableColumn = self.tableView.tableColumns[i];
             tableColumn.headerCell.stringValue = [self generateColumnName:i];
-            ((NSCell *)tableColumn.headerCell).alignment = NSCenterTextAlignment;
+            ((NSCell *)tableColumn.headerCell).alignment = NSTextAlignmentCenter;
         }
     }
 }
@@ -611,8 +738,8 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
 #pragma mark - buttonActions
 
 
-- (IBAction)addRow:(id)sender {
-    switch ([self.toolBarButtonsAddRow selectedSegment]) {
+- (IBAction)addRow:(NSToolbarItemGroup *)sender {
+    switch (sender.selectedIndex) {
         case 0:
             [self addRowAbove:sender];
             break;
@@ -623,8 +750,8 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     }
 }
 
-- (IBAction)addColumn:(id)sender {
-    switch ([self.toolBarButtonsAddColumn selectedSegment]) {
+- (IBAction)addColumn:(NSToolbarItemGroup *)sender {
+    switch (sender.selectedIndex) {
         case 0:
             [self addColumnLeft:sender];
             break;
@@ -743,49 +870,6 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     [self.undoManager setActionName:@"Delete Row(s)"];
 }
 
--(void)updateToolbarIcons {
-	if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_10) {
-		self.toolBarButtonsAddColumn.segmentStyle = NSSegmentStyleSeparated;
-		self.toolBarButtonsAddRow.segmentStyle = NSSegmentStyleSeparated;
-	}
-    [self.toolBarButtonsAddColumn setImage:[ToolbarIcons imageOfAddLeftColumnIcon] forSegment:0];
-    [self.toolBarButtonsAddColumn setImage:[ToolbarIcons imageOfAddRightColumnIcon] forSegment:1];
-    NSSize addColumnSize = self.toolBarButtonsAddColumn.intrinsicContentSize;
-    addColumnSize.height = 30;
-    self.toolbarItemAddColumn.minSize = addColumnSize;
-    self.toolbarItemAddColumn.maxSize = addColumnSize;
-    [self.toolBarButtonsAddRow setImage:[ToolbarIcons imageOfAddRowAboveIcon] forSegment:0];
-    [self.toolBarButtonsAddRow setImage:[ToolbarIcons imageOfAddRowBelowIcon] forSegment:1];
-    NSSize addRowSize = self.toolBarButtonsAddRow.intrinsicContentSize;
-    addRowSize.height = 30;
-    self.toolbarItemAddRow.minSize = addRowSize;
-    self.toolbarItemAddRow.maxSize = addRowSize;
-    self.toolBarButtonDeleteColumn.image = [ToolbarIcons imageOfDeleteColumnIcon];
-    NSSize deleteColumnSize = self.toolBarButtonDeleteColumn.intrinsicContentSize;
-    deleteColumnSize.width = 35;
-    deleteColumnSize.height = 30;
-    self.toolbarItemDeleteColumn.minSize = deleteColumnSize;
-    self.toolbarItemDeleteColumn.maxSize = deleteColumnSize;
-    self.toolBarButtonDeleteRow.image = [ToolbarIcons imageOfDeleteRowIcon];
-    NSSize deleteRowSize = self.toolBarButtonDeleteRow.intrinsicContentSize;
-    deleteRowSize.width = 35;
-    deleteRowSize.height = 30;
-    self.toolbarItemDeleteRow.minSize = deleteRowSize;
-    self.toolbarItemDeleteRow.maxSize = deleteRowSize;
-}
-
--(void)enableToolbarButtons{
-    enableEditing = YES;
-    _toolBarButtonDeleteColumn.enabled = YES;
-    _toolBarButtonDeleteRow.enabled = YES;
-    _toolBarButtonsAddColumn.enabled = YES;
-    _toolBarButtonsAddRow.enabled = YES;
-    for (NSToolbarItem *item in [(NSWindowController*)self.windowControllers.firstObject window].toolbar.visibleItems) {
-        item.enabled = YES;
-    }
-}
-
-
 #pragma mark - buttonActionImplementations
 
 -(void)deleteRowsAtIndexes:(NSIndexSet *)rowIndexes{
@@ -903,7 +987,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
         if(self.csvConfig.firstRowAsHeader){
             col.headerCell.stringValue = [columnNames objectAtIndex:((NSString *)columnIds[i]).integerValue];
         }
-        ((NSCell *)col.headerCell).alignment = NSCenterTextAlignment;
+        ((NSCell *)col.headerCell).alignment = NSTextAlignmentCenter;
         [self.tableView addTableColumn:col];
         [self.tableView moveColumn:[self.tableView numberOfColumns]-1 toColumn:[columnIndexes firstIndex]+i];
     }
@@ -963,6 +1047,12 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
         if(([self.tableView selectedRow] == -1 && [self.tableView selectedColumn] == -1)|| !enableEditing){
             return NO;
         }
+    }
+    if (menuItem.action == @selector(deleteRow:)) {
+        return enableEditing && [self.tableView selectedRow] != -1;
+    }
+    if (menuItem.action == @selector(deleteColumn:)) {
+        return enableEditing && [self.tableView selectedColumn] != -1;
     }
     return YES;
 }
@@ -1102,6 +1192,7 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
 -(void)updateChangeCount:(NSDocumentChangeType)change {
     [super updateChangeCount:change];
     [self updateStatusBar];
+    [self updateWindowSubtitle];
 }
 
 -(void)updateStatusBar {
@@ -1132,14 +1223,15 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     savePanel.accessoryView = accessoryViewController.view;
     accessoryViewController.config.firstRowAsHeader = self.csvConfig.firstRowAsHeader;
     [accessoryViewController selectFormatByConfig];
-    savePanel.allowedFileTypes = [NSArray arrayWithObject:@"csv"];
-    [savePanel beginSheetModalForWindow:window completionHandler:^(NSInteger result){
-        if (result == NSFileHandlingPanelOKButton)
+    savePanel.allowedContentTypes = @[UTTypeCommaSeparatedText];
+    [savePanel beginSheetModalForWindow:window completionHandler:^(NSModalResponse result){
+        if (result == NSModalResponseOK)
         {
 			NSError *error = nil;
-			NSData *data = [self dataWithCSVConfig:accessoryViewController.config error:&error];
+			NSData *data = [self dataWithCSVConfig:self->accessoryViewController.config error:&error];
 			if (!data) {
 				[self presentError:error modalForWindow:window delegate:nil didPresentSelector:NULL contextInfo:NULL];
+				return;
 			}
 			BOOL success = [data writeToURL:[savePanel URL] options:NSDataWritingAtomic error:&error];
 			if (!success) {

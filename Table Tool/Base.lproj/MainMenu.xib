@@ -350,6 +350,51 @@ CA
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="Table" id="TbM-mI-001">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Table" id="TbM-mn-002">
+                        <items>
+                            <menuItem title="Add Row Above" keyEquivalent="&#xF700;" id="TbM-ra-003">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="addRowAbove:" target="-1" id="TbM-ra-004"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Add Row Below" keyEquivalent="&#xF701;" id="TbM-rb-005">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="addRowBelow:" target="-1" id="TbM-rb-006"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="TbM-s1-007"/>
+                            <menuItem title="Add Column Left" keyEquivalent="&#xF702;" id="TbM-cl-008">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="addColumnLeft:" target="-1" id="TbM-cl-009"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Add Column Right" keyEquivalent="&#xF703;" id="TbM-cr-010">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="addColumnRight:" target="-1" id="TbM-cr-011"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="TbM-s2-012"/>
+                            <menuItem title="Delete Row" id="TbM-dr-013">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="deleteRow:" target="-1" id="TbM-dr-014"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Delete Column" id="TbM-dc-015">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="deleteColumn:" target="-1" id="TbM-dc-016"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
                 <menuItem title="Format" hidden="YES" id="jxT-CU-nIS">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Format" id="GEO-Iw-cKr">
