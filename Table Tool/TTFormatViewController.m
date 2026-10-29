@@ -22,33 +22,28 @@
     return self;
 }
 
-- (void)setEnabled:(BOOL)enabled {
-    self.encodingMenu.enabled = enabled;
-    self.escapeControl.enabled = enabled;
-    self.separatorControl.enabled = enabled;
-    self.decimalControl.enabled = enabled;
-    self.useFirstRowAsHeaderCheckbox.enabled = enabled;
-}
-
 - (IBAction)updateConfiguration:(id)sender {
-    _config.encoding = [self.encodingMenu selectedTag];
+    // Change a copy, so the delegate can still compare with the configuration it had before
+    CSVConfiguration *config = [_config copy];
+    config.encoding = [self.encodingMenu selectedTag];
     if([self.separatorControl selectedSegment] == 2) {
-        _config.columnSeparator = @"\t";
+        config.columnSeparator = @"\t";
     }else{
-        _config.columnSeparator = [self.separatorControl labelForSegment:[self.separatorControl selectedSegment] ];
+        config.columnSeparator = [self.separatorControl labelForSegment:[self.separatorControl selectedSegment] ];
     }
-    _config.decimalMark = [self.decimalControl labelForSegment:[self.decimalControl selectedSegment]];
+    config.decimalMark = [self.decimalControl labelForSegment:[self.decimalControl selectedSegment]];
     
     if ([self.escapeControl selectedSegment] == 0 || [self.escapeControl selectedSegment] == 1) {
-        _config.quoteCharacter = @"\"";
+        config.quoteCharacter = @"\"";
     } else {
-        _config.quoteCharacter = @"";
-        _config.escapeCharacter = @"";
+        config.quoteCharacter = @"";
+        config.escapeCharacter = @"";
     }
-    _config.escapeCharacter = [[self.escapeControl labelForSegment:[self.escapeControl selectedSegment]] substringToIndex:1];
+    config.escapeCharacter = [[self.escapeControl labelForSegment:[self.escapeControl selectedSegment]] substringToIndex:1];
 	
-	_config.firstRowAsHeader = (self.useFirstRowAsHeaderCheckbox.state == NSControlStateValueOn);
+	config.firstRowAsHeader = (self.useFirstRowAsHeaderCheckbox.state == NSControlStateValueOn);
 	
+    _config = config;
     [self.delegate configurationChangedForFormatViewController:self];
 }
 

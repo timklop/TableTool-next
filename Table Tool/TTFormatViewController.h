@@ -29,6 +29,5 @@
 - (IBAction)updateConfiguration:(id)sender;
 
 - (void)selectFormatByConfig;
-- (void)setEnabled:(BOOL)enabled;
 
 @end
