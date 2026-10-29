@@ -19,6 +19,6 @@ jobs:
 
       - name: Check architectures
         run: |
-          archs=$(lipo -archs "build/Build/Products/Release/Table Tool.app/Contents/MacOS/Table Tool")
+          archs=$(lipo -archs "build/Build/Products/Release/Table Tool Next.app/Contents/MacOS/Table Tool Next")
           echo "Architectures: $archs"
           [[ " $archs " == *" arm64 "* && " $archs " == *" x86_64 "* ]]

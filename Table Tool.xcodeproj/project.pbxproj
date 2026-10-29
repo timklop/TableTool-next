@@ -57,7 +57,7 @@
 		E16BDFCD1B4E74960024F0BD /* CSVReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSVReader.m; sourceTree = "<group>"; };
 		E16BDFCF1B4FA1B90024F0BD /* CSVWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSVWriter.h; sourceTree = "<group>"; };
 		E16BDFD01B4FA1B90024F0BD /* CSVWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSVWriter.m; sourceTree = "<group>"; };
-		E1CC84DB1B4A5F2A00ED8314 /* Table Tool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Table Tool.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1CC84DB1B4A5F2A00ED8314 /* Table Tool Next.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Table Tool Next.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1CC84DF1B4A5F2A00ED8314 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E1CC84E01B4A5F2A00ED8314 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		E1CC84E11B4A5F2A00ED8314 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -113,7 +113,7 @@
 		E1CC84DC1B4A5F2A00ED8314 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E1CC84DB1B4A5F2A00ED8314 /* Table Tool.app */,
+				E1CC84DB1B4A5F2A00ED8314 /* Table Tool Next.app */,
 				E1CC84F41B4A5F2A00ED8314 /* Table ToolTests.xctest */,
 			);
 			name = Products;
@@ -202,7 +202,7 @@
 			);
 			name = "Table Tool";
 			productName = "Table Tool";
-			productReference = E1CC84DB1B4A5F2A00ED8314 /* Table Tool.app */;
+			productReference = E1CC84DB1B4A5F2A00ED8314 /* Table Tool Next.app */;
 			productType = "com.apple.product-type.application";
 		};
 		E1CC84F31B4A5F2A00ED8314 /* Table ToolTests */ = {
@@ -470,8 +470,8 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "Table Tool/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = at.eggerapps.tabletool;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.timklop.tabletool;
+				PRODUCT_NAME = "Table Tool Next";
 			};
 			name = Debug;
 		};
@@ -485,8 +485,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "Table Tool/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = at.eggerapps.tabletool;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.timklop.tabletool;
+				PRODUCT_NAME = "Table Tool Next";
 			};
 			name = Release;
 		};
@@ -505,9 +505,9 @@
 				);
 				INFOPLIST_FILE = "Table ToolTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "at.eggerapps.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.timklop.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Table Tool.app/Contents/MacOS/Table Tool";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Table Tool Next.app/Contents/MacOS/Table Tool Next";
 			};
 			name = Debug;
 		};
@@ -522,9 +522,9 @@
 				);
 				INFOPLIST_FILE = "Table ToolTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "at.eggerapps.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.github.timklop.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Table Tool.app/Contents/MacOS/Table Tool";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Table Tool Next.app/Contents/MacOS/Table Tool Next";
 			};
 			name = Release;
 		};
