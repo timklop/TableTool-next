@@ -28,10 +28,13 @@ Using Table Tool is the easy way to create, edit and convert CSV files.
 When opening a CSV file, Table Tool detects the format specifications
 (record delimiter, character encoding, etc.) automatically.
 You can also set the specifications manually in the bar at the bottom of the window.
+Columns are resized to fit their contents (turn this off with View › Resize Columns When Opening Files).
 
 **Edit Files:**
 Edit the contents of the cells, rows and columns of the document easily in a grid based user interface.
+While editing a cell, Tab and Shift-Tab move to the next and previous cell in the row, Return and Shift-Return to the cell below and above, and ⌘-Return finishes editing.
 Add and delete rows and columns from the toolbar or the Table menu (⌥⌘ and an arrow key adds a row or column in that direction).
+After editing, the bar at the bottom sets how the file is saved; ticking or unticking Header moves the first row into or out of the column titles.
 
 **Convert Files:**
 Convert an existing CSV file to a different format with File › Convert….

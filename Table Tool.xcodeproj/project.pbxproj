@@ -25,6 +25,7 @@
 		E1CEF87F1B6A23860083B957 /* TTErrorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CEF87D1B6A23860083B957 /* TTErrorViewController.m */; };
 		E1CEF8801B6A23860083B957 /* TTErrorViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1CEF87E1B6A23860083B957 /* TTErrorViewController.xib */; };
 		E1CEF8831B6B63380083B957 /* ToolbarIcons.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CEF8821B6B63380083B957 /* ToolbarIcons.m */; };
+		4357553D2A23C266885A5703 /* TTTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BC00CC9A2E2423123CF828 /* TTTableView.m */; };
 		E1CEF8861B7097280083B957 /* CSVHeuristic.m in Sources */ = {isa = PBXBuildFile; fileRef = E1CEF8851B7097280083B957 /* CSVHeuristic.m */; };
 		E1CEF8881B74B4310083B957 /* test-doc-unquoted.csv in Resources */ = {isa = PBXBuildFile; fileRef = E1CEF8871B74B4310083B957 /* test-doc-unquoted.csv */; };
 		E1CEF88C1B79E5360083B957 /* Reading Test Documents in Resources */ = {isa = PBXBuildFile; fileRef = E1CEF88B1B79E5360083B957 /* Reading Test Documents */; };
@@ -75,6 +76,8 @@
 		E1CEF87E1B6A23860083B957 /* TTErrorViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TTErrorViewController.xib; sourceTree = "<group>"; };
 		E1CEF8811B6B63380083B957 /* ToolbarIcons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ToolbarIcons.h; sourceTree = "<group>"; };
 		E1CEF8821B6B63380083B957 /* ToolbarIcons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ToolbarIcons.m; sourceTree = "<group>"; };
+		F1C7D0E9402F46F294EE0531 /* TTTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTableView.h; sourceTree = "<group>"; };
+		D3BC00CC9A2E2423123CF828 /* TTTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTableView.m; sourceTree = "<group>"; };
 		E1CEF8841B7097280083B957 /* CSVHeuristic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSVHeuristic.h; sourceTree = "<group>"; };
 		E1CEF8851B7097280083B957 /* CSVHeuristic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSVHeuristic.m; sourceTree = "<group>"; };
 		E1CEF8871B74B4310083B957 /* test-doc-unquoted.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-doc-unquoted.csv"; sourceTree = "<group>"; };
@@ -127,6 +130,8 @@
 				36007A091D083BA000898043 /* Table Tool.entitlements */,
 				E1CEF8811B6B63380083B957 /* ToolbarIcons.h */,
 				E1CEF8821B6B63380083B957 /* ToolbarIcons.m */,
+				F1C7D0E9402F46F294EE0531 /* TTTableView.h */,
+				D3BC00CC9A2E2423123CF828 /* TTTableView.m */,
 				E1CC84E01B4A5F2A00ED8314 /* AppDelegate.h */,
 				E1CC84E11B4A5F2A00ED8314 /* AppDelegate.m */,
 				E1CC84E51B4A5F2A00ED8314 /* Document.h */,
@@ -301,6 +306,7 @@
 			files = (
 				5B338F741EF03D8000D40406 /* Constants.m in Sources */,
 				E1CEF8831B6B63380083B957 /* ToolbarIcons.m in Sources */,
+				4357553D2A23C266885A5703 /* TTTableView.m in Sources */,
 				E1CC84E71B4A5F2A00ED8314 /* Document.m in Sources */,
 				E16BDFCE1B4E74960024F0BD /* CSVReader.m in Sources */,
 				E1CEF8861B7097280083B957 /* CSVHeuristic.m in Sources */,

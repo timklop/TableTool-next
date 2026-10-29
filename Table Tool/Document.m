@@ -41,7 +41,6 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
     TTFormatViewController *statusBarFormatViewController;
     TTFormatViewController* accessoryViewController;
 }
-@property BOOL didSave;
 
 @end
 
@@ -55,19 +54,10 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
         _csvConfig = [[CSVConfiguration alloc]init];
         newFile = YES;
         errorCode5 = @"Your are not allowed to save while the input format has an error. Configure the format manually, until no error occurs.";
-        _didSave = NO;
         
         [self initValidPBoardTypes];
-        
-        [self addObserver:self forKeyPath:@"fileURL" options:0 context:nil];
-        [self addObserver:self forKeyPath:@"didSave" options:0 context:nil];
     }
     return self;
-}
-
--(void)dealloc {
-	[self removeObserver:self forKeyPath:@"fileURL"];
-	[self removeObserver:self forKeyPath:@"didSave"];
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController {
@@ -95,6 +85,7 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
         [_data addObject:[[NSMutableArray alloc]init]];
         [self.tableView reloadData];
     }
+    [self resizeColumnsIfWantedWhenOpening];
     
     enableEditing = YES;
 
@@ -224,13 +215,6 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
     return @"Document";
 }
 
-- (void)updateChangeCountWithToken:(id)changeCountToken forSaveOperation:(NSSaveOperationType)saveOperation {
-    if (saveOperation == NSSaveOperation || saveOperation == NSSaveAsOperation ) {
-        self.didSave = YES;
-    }
-    [super updateChangeCountWithToken:changeCountToken forSaveOperation:saveOperation];
-}
-
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError {
 	return [self dataWithCSVConfig:self.csvConfig error:outError];
 }
@@ -287,6 +271,7 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
 	}
     newFile = NO;
     self.csvConfig = [formatHeuristic calculatePossibleFormat];
+    [self showConfiguration:self.csvConfig];
     
     savedData = data;
 	
@@ -314,12 +299,13 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
 			if (error) *error = outError;
 			[self updateTableColumns];
 			[self.tableView reloadData];
+			[self resizeColumnsIfWantedWhenOpening];
 			[self updateWindowSubtitle];
 			return NO;
 		}
 		_maxColumnNumber = MAX(_maxColumnNumber, line.count);
 		if (self.csvConfig.firstRowAsHeader && !columnNames) {
-			columnNames = line;
+			columnNames = [self headerNamesFromRow:line];
 		} else {
 			[_data addObject:line];
 		}
@@ -327,6 +313,7 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
 	
 	[self updateTableColumns];
 	[self.tableView reloadData];
+	[self resizeColumnsIfWantedWhenOpening];
 	[self updateWindowSubtitle];
 	return YES;
 }
@@ -416,6 +403,24 @@ static NSToolbarItemIdentifier const TTToolbarItemConvert = @"TTToolbarItemConve
     
     _data[rowIndex] = rowArray;
     if (shouldReload) [self.tableView reloadData];
+}
+
+// While editing a cell, Return moves to the cell below and Shift-Return to the cell above,
+// like Tab and Shift-Tab do within a row. Command-Return finishes editing in place.
+-(BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector {
+    if (control != self.tableView || commandSelector != @selector(insertNewline:)) return NO;
+    NSEventModifierFlags modifiers = NSApp.currentEvent.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask;
+    if (modifiers & NSEventModifierFlagCommand) return NO;
+
+    NSInteger column = self.tableView.editedColumn;
+    NSInteger row = self.tableView.editedRow + ((modifiers & NSEventModifierFlagShift) ? -1 : 1);
+    if (![self.tableView.window makeFirstResponder:self.tableView]) return YES;
+    if (column < 0 || row < 0 || row >= self.tableView.numberOfRows) return YES;
+
+    [self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+    [self.tableView scrollRowToVisible:row];
+    [self.tableView editColumn:column row:row withEvent:nil select:YES];
+    return YES;
 }
 
 -(void)tableViewSelectionDidChange:(NSNotification *)notification {
@@ -695,19 +700,67 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     for(int i = 0; i < _maxColumnNumber; ++i) {
         NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:[NSString stringWithFormat:@"%d",i]];
         tableColumn.dataCell = dataCell;
-		tableColumn.headerCell.stringValue = i < columnNames.count ? columnNames[i] : [self generateColumnName:i];
+		tableColumn.headerCell.stringValue = [self titleForColumn:tableColumn atIndex:i];
         ((NSCell *)tableColumn.headerCell).alignment = NSTextAlignmentCenter;
         [self.tableView addTableColumn: tableColumn];
     }
 }
 
 -(void)updateTableColumnsNames {
-    if(!self.csvConfig.firstRowAsHeader){
-        for(int i = 0; i < [self.tableView.tableColumns count]; i++) {
-            NSTableColumn *tableColumn = self.tableView.tableColumns[i];
-            tableColumn.headerCell.stringValue = [self generateColumnName:i];
-            ((NSCell *)tableColumn.headerCell).alignment = NSTextAlignmentCenter;
+    for(int i = 0; i < [self.tableView.tableColumns count]; i++) {
+        NSTableColumn *tableColumn = self.tableView.tableColumns[i];
+        tableColumn.headerCell.stringValue = [self titleForColumn:tableColumn atIndex:i];
+        ((NSCell *)tableColumn.headerCell).alignment = NSTextAlignmentCenter;
+    }
+    [self.tableView.headerView setNeedsDisplay:YES];
+}
+
+// With a header row, a column is titled by its header cell (which stays with it when it moves); otherwise by its position: A, B, C, ...
+-(NSString *)titleForColumn:(NSTableColumn *)tableColumn atIndex:(NSInteger)index {
+    if (self.csvConfig.firstRowAsHeader) {
+        NSInteger identifier = tableColumn.identifier.integerValue;
+        return identifier < columnNames.count ? columnNames[identifier] : @"";
+    }
+    return [self generateColumnName:(int)index];
+}
+
+// Header titles are strings, also where the header row contains numbers
+-(NSArray *)headerNamesFromRow:(NSArray *)row {
+    NSMutableArray *names = [NSMutableArray arrayWithCapacity:row.count];
+    for (id value in row) {
+        if ([value isKindOfClass:[NSDecimalNumber class]]) {
+            [names addObject:[(NSDecimalNumber *)value descriptionWithLocale:@{NSLocaleDecimalSeparator:self.csvConfig.decimalMark}]];
+        } else {
+            [names addObject:value];
         }
+    }
+    return names;
+}
+
+-(IBAction)resizeColumnsToFit:(id)sender {
+    [self resizeColumnsToFitContent];
+}
+
+-(void)resizeColumnsIfWantedWhenOpening {
+    if (!newFile && [[NSUserDefaults standardUserDefaults] boolForKey:TTResizeColumnsWhenOpeningKey]) {
+        [self resizeColumnsToFitContent];
+    }
+}
+
+-(void)resizeColumnsToFitContent {
+    static const NSInteger measuredRowLimit = 1000; // enough to be representative, quick for large files
+    static const CGFloat padding = 8;
+    static const CGFloat maximumWidth = 400;
+
+    NSInteger measuredRowCount = MIN(self.tableView.numberOfRows, measuredRowLimit);
+    NSCell *cell = [dataCell copy];
+    for (NSTableColumn *tableColumn in self.tableView.tableColumns) {
+        CGFloat width = tableColumn.headerCell.cellSize.width;
+        for (NSInteger row = 0; row < measuredRowCount; row++) {
+            cell.objectValue = [self tableView:self.tableView objectValueForTableColumn:tableColumn row:row];
+            width = MAX(width, cell.cellSize.width);
+        }
+        tableColumn.width = MIN(MAX(ceil(width) + padding, tableColumn.minWidth), maximumWidth);
     }
 }
 
@@ -984,9 +1037,6 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     for(int i = 0; i < columnIds.count; i++){
         NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:columnIds[i]];
         col.dataCell = dataCell;
-        if(self.csvConfig.firstRowAsHeader){
-            col.headerCell.stringValue = [columnNames objectAtIndex:((NSString *)columnIds[i]).integerValue];
-        }
         ((NSCell *)col.headerCell).alignment = NSTextAlignmentCenter;
         [self.tableView addTableColumn:col];
         [self.tableView moveColumn:[self.tableView numberOfColumns]-1 toColumn:[columnIndexes firstIndex]+i];
@@ -1007,19 +1057,97 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
 #pragma mark - configuration
 
 -(void)configurationChangedForFormatViewController:(TTFormatViewController*)formatViewController {
-	self.csvConfig = formatViewController.config;
-	if (!newFile) {
-		NSError *outError;
-		BOOL didReload = [self reloadDataWithError:&outError];
-		if (!didReload) {
-			readingError = outError;
-			[self displayError:outError];
-		} else {
-			readingError = nil;
-			[errorControllerView removeFromSuperview];
-			errorControllerView = nil;
-		}
+	CSVConfiguration *config = formatViewController.config;
+	// Finish editing a cell first, so its value isn't lost
+	if (![self.tableView.window makeFirstResponder:self.tableView]) {
+		[self showConfiguration:self.csvConfig];
+		NSBeep();
+		return;
 	}
+	BOOL editedSinceReading = self.undoManager.canUndo || self.undoManager.canRedo;
+	if (!newFile && (readingError || !editedSinceReading)) {
+		// Nothing to keep yet: read the file again in the new format
+		self.csvConfig = config;
+		[self reloadDataShowingErrors];
+	} else {
+		// Keep the edits: the new format applies to the table as it is, and to how it is saved
+		[self applyConfiguration:config];
+	}
+}
+
+-(void)reloadDataShowingErrors {
+	NSError *outError;
+	BOOL didReload = [self reloadDataWithError:&outError];
+	if (!didReload) {
+		readingError = outError;
+		[self displayError:outError];
+	} else {
+		readingError = nil;
+		[errorControllerView removeFromSuperview];
+		errorControllerView = nil;
+	}
+}
+
+-(void)applyConfiguration:(CSVConfiguration *)config {
+	[self registerUndoForFormatChange];
+	NSIndexSet *selectedRows = self.tableView.selectedRowIndexes;
+	NSInteger rowCount = _data.count;
+	if (config.firstRowAsHeader && !self.csvConfig.firstRowAsHeader) {
+		// The first row becomes the column titles
+		columnNames = [self headerNamesFromRow:_data.firstObject ?: @[]];
+		if (_data.count > 0) [_data removeObjectAtIndex:0];
+	} else if (!config.firstRowAsHeader && self.csvConfig.firstRowAsHeader) {
+		// The column titles become the first row
+		NSMutableArray *headerRow = [NSMutableArray arrayWithCapacity:_maxColumnNumber];
+		for (NSInteger i = 0; i < _maxColumnNumber; i++) {
+			[headerRow addObject:i < columnNames.count ? columnNames[i] : @""];
+		}
+		[_data insertObject:headerRow atIndex:0];
+		columnNames = nil;
+	}
+	self.csvConfig = config;
+	[self showFormatChange];
+	[self selectRows:selectedRows shiftedBy:(NSInteger)_data.count - rowCount];
+}
+
+// The rows are the same objects as before the format change; later edits to them are undone first
+-(void)restoreRows:(NSArray *)rows columnNames:(NSArray *)names configuration:(CSVConfiguration *)config {
+	[self registerUndoForFormatChange];
+	NSIndexSet *selectedRows = self.tableView.selectedRowIndexes;
+	NSInteger rowCount = _data.count;
+	[_data setArray:rows];
+	columnNames = names;
+	self.csvConfig = config;
+	[self showFormatChange];
+	[self selectRows:selectedRows shiftedBy:(NSInteger)_data.count - rowCount];
+}
+
+// The header row moved in or out at the top; keep the same rows selected
+-(void)selectRows:(NSIndexSet *)rows shiftedBy:(NSInteger)offset {
+	if (offset == 0 || rows.count == 0) return;
+	NSMutableIndexSet *shiftedRows = [NSMutableIndexSet indexSet];
+	[rows enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+		NSInteger row = (NSInteger)idx + offset;
+		if (row >= 0) [shiftedRows addIndex:(NSUInteger)row];
+	}];
+	[self.tableView selectRowIndexes:shiftedRows byExtendingSelection:NO];
+}
+
+-(void)registerUndoForFormatChange {
+	[[self.undoManager prepareWithInvocationTarget:self] restoreRows:[_data copy] columnNames:columnNames configuration:self.csvConfig];
+	[self.undoManager setActionName:@"Change Format"];
+}
+
+-(void)showFormatChange {
+	[self showConfiguration:self.csvConfig];
+	[self updateTableColumnsNames];
+	[self.tableView reloadData];
+	[self updateWindowSubtitle];
+}
+
+-(void)showConfiguration:(CSVConfiguration *)config {
+	statusBarFormatViewController.config = config;
+	[statusBarFormatViewController selectFormatByConfig];
 }
 
 -(void)dataGotEdited {
@@ -1185,30 +1313,9 @@ writeRowsWithIndexes:(NSIndexSet *)rowIndexes
     [self dataGotEdited];
 }
 
--(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
-    [self updateStatusBar];
-}
-
 -(void)updateChangeCount:(NSDocumentChangeType)change {
     [super updateChangeCount:change];
-    [self updateStatusBar];
     [self updateWindowSubtitle];
-}
-
--(void)updateStatusBar {
-    if (self.fileURL) {
-        if (self.didSave) {
-            [statusBarFormatViewController setEnabled:NO];
-        } else {
-            if (self.documentEdited) {
-                [statusBarFormatViewController setEnabled:NO];
-            } else {
-                [statusBarFormatViewController setEnabled:YES];
-            }
-        }
-    } else {
-        [statusBarFormatViewController setEnabled:YES];
-    }
 }
 
 #pragma mark - Menu Item Actions

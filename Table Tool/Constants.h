@@ -11,3 +11,7 @@
 #pragma mark Pasteboard Types
 
 extern NSString *TTRowInternalPboardType;
+
+#pragma mark User Defaults
+
+extern NSString *TTResizeColumnsWhenOpeningKey;
