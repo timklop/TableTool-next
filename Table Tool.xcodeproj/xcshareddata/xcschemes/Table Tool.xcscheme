@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E1CC84DA1B4A5F2A00ED8314"
-               BuildableName = "Table Tool.app"
+               BuildableName = "Table Tool Next.app"
                BlueprintName = "Table Tool"
                ReferencedContainer = "container:Table Tool.xcodeproj">
             </BuildableReference>
@@ -55,7 +55,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E1CC84DA1B4A5F2A00ED8314"
-            BuildableName = "Table Tool.app"
+            BuildableName = "Table Tool Next.app"
             BlueprintName = "Table Tool"
             ReferencedContainer = "container:Table Tool.xcodeproj">
          </BuildableReference>
@@ -72,7 +72,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E1CC84DA1B4A5F2A00ED8314"
-            BuildableName = "Table Tool.app"
+            BuildableName = "Table Tool Next.app"
             BlueprintName = "Table Tool"
             ReferencedContainer = "container:Table Tool.xcodeproj">
          </BuildableReference>

@@ -1,40 +1,56 @@
-<img style='margin: 0 auto' src="https://github.com/jakob/TableTool/raw/master/Table%20Tool/Images.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width=128 height=128>
+<img src="Table%20Tool/Images.xcassets/AppIcon.appiconset/icon_128x128@2x.png" width=128 height=128 alt="Table Tool Next icon">
 
-# Table Tool 
+# Table Tool Next
 
-A simple CSV editor for macOS.
+A simple CSV editor for macOS, native on Apple Silicon and Intel Macs.
 
-Download [on the Mac App Store](https://itunes.apple.com/app/table-tool/id1122008420?mt=12).
+Table Tool Next continues [Table Tool](https://github.com/jakob/TableTool), which was last updated in 2017. Version 2.0 rebuilds it for current macOS with a modern toolbar, full dark mode support and a universal binary.
 
-<img style='margin: 0 auto' src="https://github.com/jakob/TableTool/raw/master/Artwork/Screenshots/2016-06-08 Tabletool 1.1 Customers.jpg" width=800 height=500>
+**[Download the latest release](https://github.com/timklop/TableTool-next/releases/latest)**
 
-The CSV format is a common used file format to store and exchange tabular data. 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="Artwork/Screenshots/2026-10-29%20Table%20Tool%20Next%202.0%20dark.png">
+  <img src="Artwork/Screenshots/2026-10-29%20Table%20Tool%20Next%202.0%20light.png" width=837 alt="Table Tool Next showing a customer list in a table, with the format bar at the bottom">
+</picture>
+
+The CSV format is a commonly used file format to store and exchange tabular data.
 Almost all spreadsheet and database apps (e.g. Excel and Numbers) support it.
 Unfortunately, not all CSV files are made equal.
 CSV files use different record delimiters (comma or semicolon), character encodings, decimal separators or quoting styles.
 
-TableTool handles these issues automatically.
+Table Tool handles these issues automatically.
 It detects the specification of a CSV file for you and displays its contents in a table view.
-Using TableTool is the easy way to create, edit and convert CSV files.
+Using Table Tool is the easy way to create, edit and convert CSV files.
 
 ## Usage
 
 **Open Files:**
-When opening a CSV file, Table Tool detects the format specifications 
+When opening a CSV file, Table Tool detects the format specifications
 (record delimiter, character encoding, etc.) automatically.
-You can also set the specifications manually.
+You can also set the specifications manually in the bar at the bottom of the window.
 
 **Edit Files:**
 Edit the contents of the cells, rows and columns of the document easily in a grid based user interface.
+Add and delete rows and columns from the toolbar or the Table menu (⌥⌘ and an arrow key adds a row or column in that direction).
 
 **Convert Files:**
-Convert an existing CSV file to a different format.
+Convert an existing CSV file to a different format with File › Convert….
 
-## Requirements
+## Installation
 
-Table Tool runs on macOS 12 Monterey or later, natively on both Apple Silicon and Intel Macs (universal binary).
+Table Tool Next needs macOS 12 Monterey or later.
 
-To build it yourself, open `Table Tool.xcodeproj` in Xcode and run the *Table Tool* scheme, or build a universal release from the command line:
+1. Download the `.zip` from the [latest release](https://github.com/timklop/TableTool-next/releases/latest) and open it.
+2. Move **Table Tool Next** to your Applications folder.
+3. Open it. The app isn't notarized by Apple, so the first time macOS blocks it:
+   - **macOS 15 Sequoia and later:** click *Done*, then go to System Settings › Privacy & Security, scroll down and click *Open Anyway*.
+   - **macOS 12–14:** Control-click the app, choose *Open*, then click *Open* again.
+
+Table Tool Next has its own name and bundle identifier, so it can be installed next to the original Table Tool from the Mac App Store.
+
+## Building
+
+Open `Table Tool.xcodeproj` in Xcode and run the *Table Tool* scheme, or build a universal release from the command line:
 
 ```
 xcodebuild -project "Table Tool.xcodeproj" -scheme "Table Tool" -configuration Release -destination "generic/platform=macOS" build
@@ -42,14 +58,12 @@ xcodebuild -project "Table Tool.xcodeproj" -scheme "Table Tool" -configuration R
 
 ## Credits
 
-Table Tool was made by [Sandro Peham](https://github.com/SandroPeham), 
-[Andreas Aigner](https://github.com/aigi) and 
+Table Tool was made by [Sandro Peham](https://github.com/SandroPeham),
+[Andreas Aigner](https://github.com/aigi) and
 [Jakob Egger](https://github.com/jakob).
 
-## Mission / Project Scope / Contributing
-
-TableTool seeks to be a great and simple CSV file editor and nothing more. Any formatting options or features like formulas will be out of scope for the project. Please post an issue if something is broken ([bug](https://github.com/jakob/TableTool/labels/bug)) or you believe something is missing ([feature request](https://github.com/jakob/TableTool/labels/enhancement)) and please be prepared to [provide screenshots](https://github.com/jakob/TableTool/labels/need%20mockup). We will endeavor to quickly decide if the thing is actually broken or if the new feature belongs in the project ([help-wanted](https://github.com/jakob/TableTool/labels/help%20wanted) label). Once the help-wanted label is set, please help to work on implementation for that feature and we are happy to accept a pull request for it. We currently have more side projects than we can handle, so well documented issues and great pull requests will help move this project forward. We are happy to give commit access to consistent contributors.
+Table Tool Next 2.0 was modernised by [timklop](https://github.com/timklop) with [Claude Code](https://claude.com/claude-code).
 
 ## Licence
 
-Table Tool is distributed under the [MIT Licence](https://github.com/jakob/TableTool/blob/master/LICENSE).
+Table Tool Next is distributed under the [MIT Licence](LICENSE).
