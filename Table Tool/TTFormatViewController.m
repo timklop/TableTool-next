@@ -47,7 +47,7 @@
     }
     _config.escapeCharacter = [[self.escapeControl labelForSegment:[self.escapeControl selectedSegment]] substringToIndex:1];
 	
-	_config.firstRowAsHeader = (self.useFirstRowAsHeaderCheckbox.state == NSOnState);
+	_config.firstRowAsHeader = (self.useFirstRowAsHeaderCheckbox.state == NSControlStateValueOn);
 	
     [self.delegate configurationChangedForFormatViewController:self];
 }
@@ -85,7 +85,7 @@
         [_escapeControl selectSegmentWithTag:2];
     }
 
-	self.useFirstRowAsHeaderCheckbox.state = self.config.firstRowAsHeader ? NSOnState : NSOffState;
+	self.useFirstRowAsHeaderCheckbox.state = self.config.firstRowAsHeader ? NSControlStateValueOn : NSControlStateValueOff;
 }
 
 @end

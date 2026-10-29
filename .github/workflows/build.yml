@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test
+        run: xcodebuild test -project "Table Tool.xcodeproj" -scheme "Table Tool" -destination "platform=macOS"
+
+      - name: Build universal app (arm64 + x86_64)
+        run: xcodebuild build -project "Table Tool.xcodeproj" -scheme "Table Tool" -configuration Release -destination "generic/platform=macOS" -derivedDataPath build
+
+      - name: Check architectures
+        run: |
+          archs=$(lipo -archs "build/Build/Products/Release/Table Tool.app/Contents/MacOS/Table Tool")
+          echo "Architectures: $archs"
+          [[ " $archs " == *" arm64 "* && " $archs " == *" x86_64 "* ]]

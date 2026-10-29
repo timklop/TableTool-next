@@ -10,29 +10,21 @@
 #import "CSVConfiguration.h"
 #import "TTFormatViewController.h"
 
-@interface Document : NSDocument <NSTableViewDataSource, NSTableViewDelegate, TTFormatViewControllerDelegate>
+@interface Document : NSDocument <NSTableViewDataSource, NSTableViewDelegate, NSToolbarDelegate, NSToolbarItemValidation, TTFormatViewControllerDelegate>
 
 @property NSMutableArray *data;
 @property long maxColumnNumber;
 @property CSVConfiguration *csvConfig;
 
 @property IBOutlet NSTableView *tableView;
-@property IBOutlet NSSplitView *splitView;
-@property (strong) IBOutlet NSButton *toolBarButtonDeleteColumn;
-@property (strong) IBOutlet NSSegmentedControl *toolBarButtonsAddColumn;
-@property (strong) IBOutlet NSSegmentedControl *toolBarButtonsAddRow;
-@property (strong) IBOutlet NSToolbarItem *toolbarItemAddColumn;
-@property (strong) IBOutlet NSToolbarItem *toolbarItemAddRow;
-@property (strong) IBOutlet NSButton *toolBarButtonDeleteRow;
-@property (strong) IBOutlet NSToolbarItem *toolbarItemDeleteColumn;
-@property (strong) IBOutlet NSToolbarItem *toolbarItemDeleteRow;
+@property IBOutlet NSView *formatBarContainer;
 
--(IBAction)addColumn:(id)sender;
--(IBAction)addRow:(id)sender;
--(void)addRowAbove:(id)sender;
--(void)addRowBelow:(id)sender;
--(void)addColumnLeft:(id)sender;
--(void)addColumnRight:(id)sender;
+-(IBAction)addColumn:(NSToolbarItemGroup *)sender;
+-(IBAction)addRow:(NSToolbarItemGroup *)sender;
+-(IBAction)addRowAbove:(id)sender;
+-(IBAction)addRowBelow:(id)sender;
+-(IBAction)addColumnLeft:(id)sender;
+-(IBAction)addColumnRight:(id)sender;
 -(IBAction)deleteRow:(id)sender;
 -(IBAction)deleteColumn:(id)sender;
 -(IBAction)exportFile:(id)sender;
@@ -40,4 +32,3 @@
 -(void)configurationChangedForFormatViewController:(TTFormatViewController *)formatViewController;
 
 @end
-
